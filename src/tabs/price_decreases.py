@@ -9,8 +9,12 @@ class PriceDecreasesTab(ttk.Frame):
         self.sort_column = "Name"
         self.sort_reverse = False
 
+        # Frame for treeview and scrollbar
+        tree_frame = ttk.Frame(self)
+        tree_frame.pack(expand=True, fill="both")
+
         self.tree = ttk.Treeview(
-            self,
+            tree_frame,
             columns=("Name", "Old Price", "New Price", "Have", "Max", "Change", "Since"),
             show="headings"
         )
@@ -23,7 +27,12 @@ class PriceDecreasesTab(ttk.Frame):
         self.tree.heading("Since", text="Since", command=lambda: self.sort_by("Since"))
         self.tree.column("Have", width=60, anchor="center")
         self.tree.column("Max", width=60, anchor="center")
-        self.tree.pack(expand=True, fill="both")
+
+        # Add vertical scrollbar
+        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=vsb.set)
+        vsb.pack(side="right", fill="y")
+        self.tree.pack(side="left", expand=True, fill="both")
 
         # Tag for full rows
         self.tree.tag_configure("full", background="#ffe5e5")

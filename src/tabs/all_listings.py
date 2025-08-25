@@ -25,8 +25,12 @@ class AllListingsTab(ttk.Frame):
         search_entry.pack(side="left", padx=4)
         search_entry.bind("<KeyRelease>", self.on_search)
 
+        # Frame for treeview and scrollbar
+        tree_frame = ttk.Frame(self)
+        tree_frame.pack(expand=True, fill="both", padx=8, pady=(0,8))
+
         self.tree = ttk.Treeview(
-            self,
+            tree_frame,
             columns=("Name", "Sell Price", "Buy Price", "Rate", "Have", "Max"),
             show="headings"
         )
@@ -42,7 +46,12 @@ class AllListingsTab(ttk.Frame):
         self.tree.column("Rate", width=90, anchor="center")
         self.tree.column("Have", width=60, anchor="center")
         self.tree.column("Max", width=60, anchor="center")
-        self.tree.pack(expand=True, fill="both", padx=8, pady=(0,8))
+
+        # Add vertical scrollbar
+        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=vsb.set)
+        vsb.pack(side="right", fill="y")
+        self.tree.pack(side="left", expand=True, fill="both")
 
         # Tag for full rows
         self.tree.tag_configure("full", background="#ffe5e5")
