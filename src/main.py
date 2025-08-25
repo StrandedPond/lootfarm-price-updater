@@ -8,7 +8,7 @@ from tabs.price_decreases import PriceDecreasesTab
 
 PRICE_URL = "https://loot.farm/fullpriceTF2.json"
 UPDATE_INTERVAL_MS = 60_000  # 60 seconds
-DECAY_SECONDS = 15 * 60      # 15 minutes
+
 
 def fetch_price_data():
     try:
@@ -28,12 +28,11 @@ def main():
 
     notebook = Notebook(root)
 
-    # State for decay logic
     app_state = {
         "prev_data": [],
         "curr_data": fetch_price_data(),
-        "increases": {},  # name: {"old": old_price, "new": new_price, "timestamp": t}
-        "decreases": {}   # name: {"old": old_price, "new": new_price, "timestamp": t}
+        "increases": {},  # name: {"old": old_price, "new": new_price}
+        "decreases": {}   # name: {"old": old_price, "new": new_price}
     }
 
     all_listings_tab = AllListingsTab(notebook, app_state["curr_data"])
@@ -47,7 +46,7 @@ def main():
 
     def update_data():
         new_data = fetch_price_data()
-        now = time.time()
+    # now = time.time()
         if new_data:
             prev_map = build_price_map(app_state["curr_data"])
             curr_map = build_price_map(new_data)
@@ -58,35 +57,22 @@ def main():
                 if old_price is not None:
                     # Price increased
                     if new_price > old_price:
-                        # If already in increases, update and reset timer
                         app_state["increases"][name] = {
                             "old": old_price,
-                            "new": new_price,
-                            "timestamp": now
+                            "new": new_price
                         }
-                        # Remove from decreases if present
                         if name in app_state["decreases"]:
                             del app_state["decreases"][name]
                     # Price decreased
                     elif new_price < old_price:
-                        # Remove from increases if present and add to decreases
                         if name in app_state["increases"]:
                             del app_state["increases"][name]
                         app_state["decreases"][name] = {
                             "old": old_price,
-                            "new": new_price,
-                            "timestamp": now
+                            "new": new_price
                         }
 
-            # Decay logic: remove entries older than 15 minutes
-            app_state["increases"] = {
-                k: v for k, v in app_state["increases"].items()
-                if now - v["timestamp"] < DECAY_SECONDS
-            }
-            app_state["decreases"] = {
-                k: v for k, v in app_state["decreases"].items()
-                if now - v["timestamp"] < DECAY_SECONDS
-            }
+
 
             # Prepare lists for tabs
             increases_list = [
@@ -94,8 +80,7 @@ def main():
                     "name": name,
                     "old": v["old"],
                     "new": v["new"],
-                    "change": v["new"] - v["old"],
-                    "timestamp": v["timestamp"]
+                    "change": v["new"] - v["old"]
                 }
                 for name, v in app_state["increases"].items()
             ]
@@ -104,8 +89,7 @@ def main():
                     "name": name,
                     "old": v["old"],
                     "new": v["new"],
-                    "change": v["new"] - v["old"],
-                    "timestamp": v["timestamp"]
+                    "change": v["new"] - v["old"]
                 }
                 for name, v in app_state["decreases"].items()
             ]

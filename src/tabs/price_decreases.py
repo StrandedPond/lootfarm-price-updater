@@ -15,7 +15,7 @@ class PriceDecreasesTab(ttk.Frame):
 
         self.tree = ttk.Treeview(
             tree_frame,
-            columns=("Name", "Old Price", "New Price", "Have", "Max", "Change", "Since"),
+            columns=("Name", "Old Price", "New Price", "Have", "Max", "Change"),
             show="headings"
         )
         self.tree.heading("Name", text="Name", command=lambda: self.sort_by("Name"))
@@ -24,7 +24,6 @@ class PriceDecreasesTab(ttk.Frame):
         self.tree.heading("Have", text="Have", command=lambda: self.sort_by("Have"))
         self.tree.heading("Max", text="Max", command=lambda: self.sort_by("Max"))
         self.tree.heading("Change", text="Change", command=lambda: self.sort_by("Change"))
-        self.tree.heading("Since", text="Since", command=lambda: self.sort_by("Since"))
         self.tree.column("Have", width=60, anchor="center")
         self.tree.column("Max", width=60, anchor="center")
 
@@ -47,7 +46,6 @@ class PriceDecreasesTab(ttk.Frame):
             "Have": lambda item: item.get("have", 0),
             "Max": lambda item: item.get("max", 0),
             "Change": lambda item: item["change"],
-            "Since": lambda item: item["timestamp"],
         }
         if self.sort_column == column:
             self.sort_reverse = not self.sort_reverse
@@ -65,19 +63,16 @@ class PriceDecreasesTab(ttk.Frame):
 
     def refresh_tree(self):
         self.tree.delete(*self.tree.get_children())
-        now = time.time()
         for item in self.decreases_list:
             name = item["name"]
             old_price = item["old"] / 100
             new_price = item["new"] / 100
             change = (item["new"] - item["old"]) / 100
-            since = int(now - item["timestamp"])
-            since_str = f"{since//60}m {since%60}s"
             have = item.get("have", 0)
             max_ = item.get("max", 0)
             tags = ("full",) if have >= max_ and max_ > 0 else ()
             self.tree.insert(
                 "", "end",
-                values=(name, f"{old_price:.2f}", f"{new_price:.2f}", have, max_, f"{change:.2f}", since_str),
+                values=(name, f"{old_price:.2f}", f"{new_price:.2f}", have, max_, f"{change:.2f}"),
                 tags=tags
             )
