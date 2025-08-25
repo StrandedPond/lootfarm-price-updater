@@ -30,7 +30,7 @@ python src/main.py
 
 ## File Structure
 ```
-price-update-app
+lootfarm-price-updater
 ├── src
 │   ├── main.py                # Entry point of the application
 │   ├── tabs
@@ -45,6 +45,3 @@ price-update-app
 
 ## Contributing
 Contributions are welcome! Please submit a pull request or open an issue for any enhancements or bug fixes.
-
-## License
-This project is licensed under the MIT License.
