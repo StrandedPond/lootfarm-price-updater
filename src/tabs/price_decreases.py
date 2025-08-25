@@ -1,31 +1,34 @@
 import tkinter as tk
 from tkinter import ttk
+import time
 
 class PriceDecreasesTab(ttk.Frame):
-    def __init__(self, parent, curr_data, prev_data):
+    def __init__(self, parent, curr_data, decreases_list):
         super().__init__(parent)
-        self.tree = ttk.Treeview(self, columns=("Name", "Old Price", "New Price", "Change"), show="headings")
+        self.tree = ttk.Treeview(
+            self,
+            columns=("Name", "Old Price", "New Price", "Change", "Since"),
+            show="headings"
+        )
         self.tree.heading("Name", text="Name")
         self.tree.heading("Old Price", text="Old Price")
         self.tree.heading("New Price", text="New Price")
         self.tree.heading("Change", text="Change")
+        self.tree.heading("Since", text="Since")
         self.tree.pack(expand=True, fill="both")
-        self.update_data(curr_data, prev_data)
+        self.update_data(decreases_list)
 
-    def update_data(self, curr_data, prev_data):
+    def update_data(self, decreases_list):
         self.tree.delete(*self.tree.get_children())
-        prev_prices = {item["name"]: item["price"] for item in prev_data}
-        for item in curr_data:
-            name = item.get("name", "")
-            new_price = item.get("price", 0)
-            old_price = prev_prices.get(name)
-            if old_price is not None and new_price < old_price:
-                self.tree.insert(
-                    "", "end",
-                    values=(
-                        name,
-                        f"{old_price/100:.2f}",
-                        f"{new_price/100:.2f}",
-                        f"-{(old_price-new_price)/100:.2f}"
-                    )
-                )
+        now = time.time()
+        for item in decreases_list:
+            name = item["name"]
+            old_price = item["old"] / 100
+            new_price = item["new"] / 100
+            change = (item["new"] - item["old"]) / 100
+            since = int(now - item["timestamp"])
+            since_str = f"{since//60}m {since%60}s"
+            self.tree.insert(
+                "", "end",
+                values=(name, f"{old_price:.2f}", f"{new_price:.2f}", f"{change:.2f}", since_str)
+            )
