@@ -5,30 +5,70 @@ import time
 class PriceDecreasesTab(ttk.Frame):
     def __init__(self, parent, curr_data, decreases_list):
         super().__init__(parent)
+        self.decreases_list = decreases_list
+        self.sort_column = "Name"
+        self.sort_reverse = False
+
         self.tree = ttk.Treeview(
             self,
-            columns=("Name", "Old Price", "New Price", "Change", "Since"),
+            columns=("Name", "Old Price", "New Price", "Have", "Max", "Change", "Since"),
             show="headings"
         )
-        self.tree.heading("Name", text="Name")
-        self.tree.heading("Old Price", text="Old Price")
-        self.tree.heading("New Price", text="New Price")
-        self.tree.heading("Change", text="Change")
-        self.tree.heading("Since", text="Since")
+        self.tree.heading("Name", text="Name", command=lambda: self.sort_by("Name"))
+        self.tree.heading("Old Price", text="Old Price", command=lambda: self.sort_by("Old Price"))
+        self.tree.heading("New Price", text="New Price", command=lambda: self.sort_by("New Price"))
+        self.tree.heading("Have", text="Have", command=lambda: self.sort_by("Have"))
+        self.tree.heading("Max", text="Max", command=lambda: self.sort_by("Max"))
+        self.tree.heading("Change", text="Change", command=lambda: self.sort_by("Change"))
+        self.tree.heading("Since", text="Since", command=lambda: self.sort_by("Since"))
+        self.tree.column("Have", width=60, anchor="center")
+        self.tree.column("Max", width=60, anchor="center")
         self.tree.pack(expand=True, fill="both")
+
+        # Tag for full rows
+        self.tree.tag_configure("full", background="#ffe5e5")
+
         self.update_data(decreases_list)
 
+    def sort_by(self, column):
+        col_map = {
+            "Name": lambda item: item["name"],
+            "Old Price": lambda item: item["old"],
+            "New Price": lambda item: item["new"],
+            "Have": lambda item: item.get("have", 0),
+            "Max": lambda item: item.get("max", 0),
+            "Change": lambda item: item["change"],
+            "Since": lambda item: item["timestamp"],
+        }
+        if self.sort_column == column:
+            self.sort_reverse = not self.sort_reverse
+        else:
+            self.sort_column = column
+            self.sort_reverse = False
+
+        key_func = col_map.get(column, lambda item: item["name"])
+        self.decreases_list.sort(key=key_func, reverse=self.sort_reverse)
+        self.refresh_tree()
+
     def update_data(self, decreases_list):
+        self.decreases_list = decreases_list
+        self.refresh_tree()
+
+    def refresh_tree(self):
         self.tree.delete(*self.tree.get_children())
         now = time.time()
-        for item in decreases_list:
+        for item in self.decreases_list:
             name = item["name"]
             old_price = item["old"] / 100
             new_price = item["new"] / 100
             change = (item["new"] - item["old"]) / 100
             since = int(now - item["timestamp"])
             since_str = f"{since//60}m {since%60}s"
+            have = item.get("have", 0)
+            max_ = item.get("max", 0)
+            tags = ("full",) if have >= max_ and max_ > 0 else ()
             self.tree.insert(
                 "", "end",
-                values=(name, f"{old_price:.2f}", f"{new_price:.2f}", f"{change:.2f}", since_str)
+                values=(name, f"{old_price:.2f}", f"{new_price:.2f}", have, max_, f"{change:.2f}", since_str),
+                tags=tags
             )
