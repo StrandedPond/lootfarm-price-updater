@@ -2,11 +2,13 @@ import tkinter as tk
 from tkinter import ttk
 
 class AllListingsTab(ttk.Frame):
-    def __init__(self, parent, price_data):
+    def __init__(self, parent, price_data, search_var):
         super().__init__(parent)
         self.price_data = price_data
         self.sort_column = "Name"
         self.sort_reverse = False
+        self.search_var = search_var
+        self.search_var.trace_add("write", lambda *args: self.refresh_tree())
 
         # Style
         style = ttk.Style()
@@ -15,15 +17,6 @@ class AllListingsTab(ttk.Frame):
         style.configure("Treeview", font=("Segoe UI", 10), rowheight=28, background="#f5f7fa", fieldbackground="#f5f7fa")
         style.map("Treeview", background=[("selected", "#b3d1ff")])
         style.configure("Full.Treeview", background="#ffe5e5")  # Light red for full rows
-
-        # Frame for search/filter
-        search_frame = ttk.Frame(self)
-        search_frame.pack(fill="x", padx=8, pady=4)
-        ttk.Label(search_frame, text="Search:").pack(side="left")
-        self.search_var = tk.StringVar()
-        search_entry = ttk.Entry(search_frame, textvariable=self.search_var)
-        search_entry.pack(side="left", padx=4)
-        search_entry.bind("<KeyRelease>", self.on_search)
 
         # Frame for treeview and scrollbar
         tree_frame = ttk.Frame(self)

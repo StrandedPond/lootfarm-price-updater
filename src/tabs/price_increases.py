@@ -3,11 +3,14 @@ from tkinter import ttk
 import time
 
 class PriceIncreasesTab(ttk.Frame):
-    def __init__(self, parent, curr_data, increases_list):
+    def __init__(self, parent, curr_data, increases_list, search_var):
         super().__init__(parent)
         self.increases_list = increases_list
         self.sort_column = "Name"
         self.sort_reverse = False
+
+        self.search_var = search_var
+        self.search_var.trace_add("write", lambda *args: self.refresh_tree())
 
         # Frame for treeview and scrollbar
         tree_frame = ttk.Frame(self)
@@ -51,43 +54,7 @@ class PriceIncreasesTab(ttk.Frame):
         if not row_id:
             return
         name = self.tree.item(row_id, "values")[0]
-        self.clipboard_clear()
-        self.clipboard_append(name)
-        self.update()  # Ensures clipboard is set
-    def __init__(self, parent, curr_data, increases_list):
-        super().__init__(parent)
-        self.increases_list = increases_list
-        self.sort_column = "Name"
-        self.sort_reverse = False
-
-        # Frame for treeview and scrollbar
-        tree_frame = ttk.Frame(self)
-        tree_frame.pack(expand=True, fill="both")
-
-        self.tree = ttk.Treeview(
-            tree_frame,
-            columns=("Name", "Old Price", "New Price", "Have", "Max", "Change"),
-            show="headings"
-        )
-        self.tree.heading("Name", text="Name", command=lambda: self.sort_by("Name"))
-        self.tree.heading("Old Price", text="Old Price", command=lambda: self.sort_by("Old Price"))
-        self.tree.heading("New Price", text="New Price", command=lambda: self.sort_by("New Price"))
-        self.tree.heading("Have", text="Have", command=lambda: self.sort_by("Have"))
-        self.tree.heading("Max", text="Max", command=lambda: self.sort_by("Max"))
-        self.tree.heading("Change", text="Change", command=lambda: self.sort_by("Change"))
-        self.tree.column("Have", width=60, anchor="center")
-        self.tree.column("Max", width=60, anchor="center")
-
-        # Add vertical scrollbar
-        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=vsb.set)
-        vsb.pack(side="right", fill="y")
-        self.tree.pack(side="left", expand=True, fill="both")
-
-        # Tag for full rows
-        self.tree.tag_configure("full", background="#ffe5e5")
-
-        self.update_data(increases_list)
+    # ...existing code...
 
     def sort_by(self, column):
         col_map = {

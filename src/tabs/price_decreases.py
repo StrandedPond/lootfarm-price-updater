@@ -3,11 +3,14 @@ from tkinter import ttk
 import time
 
 class PriceDecreasesTab(ttk.Frame):
-    def __init__(self, parent, curr_data, decreases_list):
+    def __init__(self, parent, curr_data, decreases_list, search_var):
         super().__init__(parent)
         self.decreases_list = decreases_list
         self.sort_column = "Name"
         self.sort_reverse = False
+
+        self.search_var = search_var
+        self.search_var.trace_add("write", lambda *args: self.refresh_tree())
 
         # Frame for treeview and scrollbar
         tree_frame = ttk.Frame(self)
@@ -33,12 +36,8 @@ class PriceDecreasesTab(ttk.Frame):
         vsb.pack(side="right", fill="y")
         self.tree.pack(side="left", expand=True, fill="both")
 
-        # Tag for full rows
-        self.tree.tag_configure("full", background="#ffe5e5")
-
-        self.tree.bind("<Button-1>", self.on_tree_click)
-
-        self.update_data(decreases_list)
+    # Tag for full rows
+    # ...existing code...
 
     def on_tree_click(self, event):
         region = self.tree.identify("region", event.x, event.y)
@@ -54,11 +53,7 @@ class PriceDecreasesTab(ttk.Frame):
         self.clipboard_clear()
         self.clipboard_append(name)
         self.update()
-    def __init__(self, parent, curr_data, decreases_list):
-        super().__init__(parent)
-        self.decreases_list = decreases_list
-        self.sort_column = "Name"
-        self.sort_reverse = False
+    # ...existing code...
 
         # Frame for treeview and scrollbar
         tree_frame = ttk.Frame(self)
@@ -87,7 +82,7 @@ class PriceDecreasesTab(ttk.Frame):
         # Tag for full rows
         self.tree.tag_configure("full", background="#ffe5e5")
 
-        self.update_data(decreases_list)
+    # ...existing code...
 
     def sort_by(self, column):
         col_map = {
